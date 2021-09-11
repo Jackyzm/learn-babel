@@ -1,70 +1,44 @@
-# Getting Started with Create React App
+# 如何写一个 babel
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+    https://github.com/jamiebuilds/babel-handbook/blob/master/translations/zh-Hans/plugin-handbook.md
 
-## Available Scripts
+# babel
 
-In the project directory, you can run:
+    Babel是一个 JavaScript 编译器，准确说是一个source-to-source编译器，通常称为“ transpiler”。这意味着您向 Babel 提供一些 JavaScript 代码，Babel 修改代码，并返回生成新代码。
 
-### `yarn start`
+    babel在编译时候，会把源代码分为两部分来处理：语法syntax、api。
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+    语法syntax比如const、let、模版字符串、扩展运算符等。 api比如Array.includes()等新函数。
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+## @babel/core
 
-### `yarn test`
+    babel编译器。被拆分三个模块：@babel/parser @babel/traverse @babel/generator
+    @babel/parser: 接受源码，进行词法分析、语法分析，生成AST。
+    @babel/traverse：接受一个AST，并对其遍历，根据preset、plugin进行逻辑处理，进行替换、删除、添加节点。
+    @babel/generator：接受最终生成的AST，并将其转换为代码字符串，同时此过程也可以创建source map。
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+    babel转码流程：input string -> @babel/parser parser -> AST -> transformer[s] -> AST -> @babel/generator -> output string。
 
-### `yarn build`
+## visitor
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+    babel-plugins在生成ast树时注入，可对代码进行操作， babel为我们提供一个visitor方法，可以自定义babel
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+    AST语法树 https://github.com/jamiebuilds/babel-handbook/blob/master/translations/zh-Hans/plugin-handbook.md#toc-asts
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `yarn eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `yarn build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+```sh
+module.exports = function () {
+    return {
+        visitor: {
+            // 这个地方使用AST树的类型进行检测
+            // 该链接包含所有AST树的类型
+            // https://github.com/benjamn/ast-types/blob/master/gen/namedTypes.ts
+            // 检查变量注册的代码
+            // https://babeljs.io/docs/en/babel-types#declaration
+            Declaration(path, state) {
+                console.log(path.node.kind)
+                path.node.kind = 'var';
+            }
+        }
+    }
+}
+```

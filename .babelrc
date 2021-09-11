@@ -1,0 +1,9 @@
+{
+    "presets": [
+        "react-app"
+    ],
+    "plugins": [
+        // 引入前 打包200K+  引入后打包150K 证明lodash按需引入成功
+        "test1"
+    ]
+}
